@@ -77,10 +77,11 @@ class _BottomContainerState extends State<BottomContainer> {
   late GenerativeModel geminiVisionProModel;
   late GenerativeModel geminiProModel;
 
-  @override
-  Future<void> initState() async {
+  Future<void> askGemini() async {
+    print("button pressed");
+    print(_textController.text);
     geminiVisionProModel = GenerativeModel(
-      model: 'gemini-1.5-pro',
+      model: 'gemini-1.0-pro',
       apiKey: 'AIzaSyBvQr96K6rinQ_31BqRD7fGIMdsZ1egUfg',
       generationConfig: GenerationConfig(
         temperature: 0.4,
@@ -96,10 +97,12 @@ class _BottomContainerState extends State<BottomContainer> {
 
     final content = [Content.text(_textController.text)];
     final response = await geminiVisionProModel.generateContent(content);
-    print(response.text);
-
-    super.initState();
-  }
+    // Assuming `response.text` is the way to get the generated text from the response.
+    // Adjust the property name based on the actual API of GenerateContentResponse.
+    final String? generatedText = response.text; 
+    print(generatedText);
+    _textController.text = generatedText!;
+    }
 
   @override
   void dispose() {
@@ -260,6 +263,12 @@ class _BottomContainerState extends State<BottomContainer> {
                                     },
                                     hint: const Text('Time'),
                                   ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      askGemini();
+                                    },
+                                    child: const Text('Ask Gemini'),
+                                  )
                                 ],
                               ),
                             ),
