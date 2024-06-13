@@ -2,66 +2,94 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
-class GoogleMapPage extends StatelessWidget {
+class GoogleMapPage extends StatefulWidget {
   const GoogleMapPage({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
+  _GoogleMapPageState createState() => _GoogleMapPageState();
+}
+
+class _GoogleMapPageState extends State<GoogleMapPage> {
+  late GoogleMapController _mapController;
+  double _zoomLevel = 14.0; // Initial zoom level
+  LatLng _location = const LatLng(44.44593474461629, 26.092247495861677); // Initial location
+
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+  }
+
+  void setZoomLevel(double zoomLevel, LatLng location) {
+    setState(() {
+      _zoomLevel = zoomLevel;
+      _location = location;
+      _mapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: _location,
+            zoom: _zoomLevel,
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Stack(
         children: [
           GoogleMap(
+            onMapCreated: _onMapCreated,
             initialCameraPosition: CameraPosition(
-              target: LatLng(37.4223, -122.0849), // Initial map location
-              zoom: 14.0,
+              target: _location, // Initial map location
+              zoom: _zoomLevel,
             ),
           ),
-          Positioned(
+          const Positioned(
             top: 30.0, // Distance from the top edge
             left: 20.0, // Distance from the left edge
-            child: CircleButton(Icons.menu), // Custom circle button with menu icon
+            child: CircleButton(icon: Icons.menu), // Custom circle button with menu icon
           ),
-          Positioned(
+          const Positioned(
             top: 30.0, // Distance from the top edge
             right: 20.0, // Distance from the right edge
-            child: CircleButton(Icons.person), // Custom circle button with profile icon
+            child: CircleButton(icon: Icons.person), // Custom circle button with profile icon
           ),
         ],
       ),
-      bottomNavigationBar: BottomContainer(), // Adding bottom container
+      bottomNavigationBar: BottomContainer(setZoomLevel: setZoomLevel), // Passing setZoomLevel method
     );
   }
 }
 
 class CircleButton extends StatelessWidget {
   final IconData icon;
+  final VoidCallback? onPressed;
 
-  const CircleButton(this.icon, {super.key});
+  const CircleButton({required this.icon, this.onPressed, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Add functionality for the circle button here
-      },
-      child: Container(
-        margin: const EdgeInsets.only(),
-        padding: const EdgeInsets.all(10.0),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          icon, // Icon passed as parameter
-          color: Colors.black,
-        ),
+    return Container(
+      width: 50.0,
+      height: 50.0,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.blue,
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white),
+        onPressed: onPressed,
       ),
     );
   }
 }
 
 class BottomContainer extends StatefulWidget {
-  const BottomContainer({super.key});
+  final Function(double, LatLng) setZoomLevel;
+
+  const BottomContainer({required this.setZoomLevel, super.key});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -90,9 +118,9 @@ class _BottomContainerState extends State<BottomContainer> {
         maxOutputTokens: 4096,
       ),
       safetySettings: [
-        SafetySetting( HarmCategory.harassment, HarmBlockThreshold.high),
+        SafetySetting(HarmCategory.harassment, HarmBlockThreshold.high),
         SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.high),
-      ]
+      ],
     );
 
     final content = [Content.text(_textController.text)];
@@ -102,6 +130,16 @@ class _BottomContainerState extends State<BottomContainer> {
     final String? generatedText = response.text; 
     print(generatedText);
     _textController.text = generatedText!;
+    print("bfeore");
+    LatLng newLocation = const LatLng(44.42784935487525, 26.08695440652212);
+    widget.setZoomLevel(16.0, newLocation);
+    print("after");
+    Future.delayed(const Duration(seconds: 3), () {
+      print("5 seconds passed");
+      LatLng secondLocation = const LatLng(44.44223704333257, 26.09763610362667);
+      widget.setZoomLevel(16.0, secondLocation);
+    });
+    
     }
 
   @override
@@ -146,29 +184,34 @@ class _BottomContainerState extends State<BottomContainer> {
                       Positioned(
                         top: 20.0, // Distance from the top edge
                         left: 20.0, // Distance from the left edge
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5), // Shadow color
-                                spreadRadius: 2, // Spread radius
-                                blurRadius: 3, // Blur radius
-                                offset: const Offset(0, 2), // Offset
+                        child: GestureDetector(
+                          onTap: () {
+                            askGemini();
+                          },
+                          child: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5), // Shadow color
+                                  spreadRadius: 2, // Spread radius
+                                  blurRadius: 3, // Blur radius
+                                  offset: const Offset(0, 2), // Offset
+                                ),
+                              ],
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.design_services_outlined, // AI icon
+                                color: Colors.black,
                               ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.design_services_outlined, // AI icon
-                              color: Colors.black,
                             ),
                           ),
                         ),
-                      ),
+                      )
                     ],
                   ),
                 ),
@@ -263,12 +306,6 @@ class _BottomContainerState extends State<BottomContainer> {
                                     },
                                     hint: const Text('Time'),
                                   ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      askGemini();
-                                    },
-                                    child: const Text('Ask Gemini'),
-                                  )
                                 ],
                               ),
                             ),
@@ -284,19 +321,22 @@ class _BottomContainerState extends State<BottomContainer> {
           Container(
             margin: const EdgeInsets.only(top: 20, left: 20, right: 20),
             child: SizedBox(
-              height: 160,
-              child: TextField(
-                controller: _textController,
-                enabled: false,
-                maxLines: 5, // Increase this value to increase the height of the TextField
-                decoration: InputDecoration(
-                  hintText: '',
-                  isDense: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+              height: 160, // Fixed height for the container
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical, // Enable vertical scrolling
+                child: TextField(
+                  controller: _textController,
+                  readOnly: true, // Use readOnly instead of enabled for scrollability
+                  maxLines: null, // Allow unlimited lines
+                  decoration: InputDecoration(
+                    hintText: '',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
+                  style: const TextStyle(height: 2), // Adjust line spacing
                 ),
-                style: const TextStyle(height: 2), // Increase this value to increase line spacing
               ),
             ),
           )
