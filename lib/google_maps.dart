@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gemini_app/profile.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
@@ -51,11 +52,19 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
             left: 20.0, // Distance from the left edge
             child: CircleButton(icon: Icons.menu), // Custom circle button with menu icon
           ),
-          const Positioned(
+            Positioned(
             top: 30.0, // Distance from the top edge
             right: 20.0, // Distance from the right edge
-            child: CircleButton(icon: Icons.person), // Custom circle button with profile icon
-          ),
+            child: CircleButton(
+              icon: Icons.person,
+              onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
+              },
+            ), // Custom circle button with profile icon
+            ),
         ],
       ),
       bottomNavigationBar: BottomContainer(setZoomLevel: setZoomLevel), // Passing setZoomLevel method

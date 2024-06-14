@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login.dart'; // Import your LoginPage
 import 'google_maps.dart'; // Import your GoogleMapPage
+import 'profile.dart'; // Import your ProfilePage
 
 void main() {
   runApp(const MyApp());
@@ -24,6 +25,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         '/login': (context) => const LoginPage(),
         '/google_maps': (context) => const GoogleMapPage(),
+        '/profile': (context) => const ProfilePage(),
       },
     );
   }
