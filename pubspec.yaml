@@ -28,3 +28,10 @@ flutter:
 
   assets:
     - assets/1.png
+    - assets/images/ateneu.jpg
+    - assets/images/intercontinental.jpg
+    - assets/images/opera.jpg
+    - assets/images/opera_cluj.jpg
+    - assets/images/tulcea.jpg
+    - assets/images/arta.jpg
+    - assets/images/traily.jpg
