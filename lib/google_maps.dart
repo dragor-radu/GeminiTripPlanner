@@ -16,8 +16,8 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
   late GoogleMapController _mapController;
   double _zoomLevel = 14.0; // Initial zoom level
   LatLng _location = const LatLng(44.44593474461629, 26.092247495861677); // Initial location
-  Set<Marker> _markers = {};
-  Set<Polyline> _polylines = {};
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _polylines = {};
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
@@ -165,54 +165,49 @@ class _BottomContainerState extends State<BottomContainer> {
 
   List<TravelPlan> travelPlans = []; // List to hold generated travel plans
 
- Future<void> fetchLocationDetails(String location) async {
-  try {
-    var result = await googlePlace.autocomplete.get(location);
+  Future<void> fetchLocationDetails(String location) async {
+    try {
+      var result = await googlePlace.autocomplete.get(location);
 
-    if (result != null &&
-        result.predictions != null &&
-        result.predictions!.isNotEmpty) {
-      var placeId = result.predictions![0].placeId;
-      var details = await googlePlace.details.get(placeId.toString());
+      if (result != null &&
+          result.predictions != null &&
+          result.predictions!.isNotEmpty) {
+        var placeId = result.predictions![0].placeId;
+        var details = await googlePlace.details.get(placeId.toString());
 
-      if (details != null && details.result != null) {
-        var location = details.result!.geometry?.location;
-        if (location != null) {
-          var lat = location.lat;
-          var lng = location.lng;
+        if (details != null && details.result != null) {
+          var location = details.result!.geometry?.location;
+          if (location != null) {
+            var lat = location.lat;
+            var lng = location.lng;
 
-          print("Latitude: $lat, Longitude: $lng");
+            print("Latitude: $lat, Longitude: $lng");
+            LatLng secondLocation = LatLng(lat!, lng!);
+            widget.setZoomLevel(16.0, secondLocation);
 
-          // Use await to wait for the delay to complete
-          await Future.delayed(const Duration(seconds: 4));
+            // Check if addMarker and drawPolyline are called properly
+            widget.addMarker(LatLng(lat, lng));
+            print("Marker added.");
 
-          LatLng secondLocation = LatLng(lat!, lng!);
-          widget.setZoomLevel(16.0, secondLocation);
-
-          // Check if addMarker and drawPolyline are called properly
-          widget.addMarker(LatLng(lat, lng));
-          print("Marker added.");
-
-          widget.drawPolyline([
-            const LatLng(44.44593474461629, 26.092247495861677),
-            const LatLng(44.43361315183571, 26.078571568160005),
-            const LatLng(45.43361315183571, 25.078571568160005),
-            const LatLng(43.43361315183571, 27.078571568160005)
-          ]);
-          print("Polyline drawn.");
+            widget.drawPolyline([
+              currentLoc,
+              secondLocation,
+            ]);
+            currentLoc = secondLocation;
+            print("Polyline drawn.");
+            // Use await to wait for the delay to complete
+            await Future.delayed(const Duration(seconds: 4));
+          }
+        } else {
+          print("Details or result is null.");
         }
       } else {
-        print("Details or result is null.");
+        print("No predictions found.");
       }
-    } else {
-      print("No predictions found.");
+    } catch (e) {
+      print("Error retrieving location details: $e");
     }
-  } catch (e) {
-    print("Error retrieving location details: $e");
   }
-}
-
-
 
   Future<void> askGemini() async {
     print("button pressed");
@@ -222,7 +217,7 @@ class _BottomContainerState extends State<BottomContainer> {
     String city = "";
     if (match != null) {
       city = match.group(1)!;
-      print('Extracted Location: $city');
+      print('Extracted Locationa: $city');
     } else {
       print('Location not found in text.');
     }
@@ -276,6 +271,7 @@ class _BottomContainerState extends State<BottomContainer> {
     for (String location in locations){
       await fetchLocationDetails(location);
     }
+    widget.setZoomLevel(14.0, currentLoc);
   }
 
   @override
@@ -345,7 +341,7 @@ class _BottomContainerState extends State<BottomContainer> {
                               ),
                               child: const Center(
                                 child: Icon(
-                                  Icons.question_mark, // AI icon
+                                  Icons.waving_hand, // AI icon
                                   color: Colors.black,
                                 ),
                               ),
